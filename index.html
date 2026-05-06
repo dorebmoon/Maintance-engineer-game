@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechQuest - 技术探索之旅</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- 启动画面 -->
+  <div id="splash-screen" class="splash">
+    <div class="splash-content">
+      <div class="splash-logo">
+        <span class="logo-icon">⚔️</span>
+        <h1>TechQuest</h1>
+        <p class="subtitle">技术探索之旅</p>
+      </div>
+      <div class="splash-tagline">掌握 SQL · Redis · Kafka · ELK 四大核心技术</div>
+      <button id="btn-start" class="btn-start">
+        <span>开始冒险</span>
+        <span class="btn-arrow">→</span>
+      </button>
+      <div class="splash-hint">循序渐进 · 交互式学习 · 闯关挑战</div>
+    </div>
+    <div class="splash-particles" id="particles"></div>
+  </div>
+
+  <!-- 主应用 -->
+  <div id="app" class="app hidden">
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+      <div class="nav-brand" onclick="app.showHome()">
+        <span class="brand-icon">⚔️</span>
+        <span class="brand-text">TechQuest</span>
+      </div>
+      <div class="nav-stats">
+        <div class="stat-item" title="总经验值">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-value" id="total-xp">0</span>
+          <span class="stat-label">XP</span>
+        </div>
+        <div class="stat-item" title="等级">
+          <span class="stat-icon">🏆</span>
+          <span class="stat-value" id="player-level">1</span>
+        </div>
+        <div class="stat-item" title="连续学习天数">
+          <span class="stat-icon">🔥</span>
+          <span class="stat-value" id="streak-days">0</span>
+          <span class="stat-label">天</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-btn" onclick="app.showAchievements()" title="成就">🏅</button>
+        <button class="nav-btn" onclick="app.showProgress()" title="进度">📊</button>
+        <button class="nav-btn" onclick="app.resetProgress()" title="重置">🔄</button>
+      </div>
+    </nav>
+
+    <!-- 主页 - 世界选择 -->
+    <main id="view-home" class="view active">
+      <div class="home-header">
+        <h2>选择你的冒险世界</h2>
+        <p>每个世界包含多个关卡，从基础到高级循序渐进</p>
+      </div>
+      <div class="worlds-grid" id="worlds-grid"></div>
+    </main>
+
+    <!-- 世界详情 - 关卡选择 -->
+    <main id="view-world" class="view">
+      <div class="world-header" id="world-header">
+        <button class="back-btn" onclick="app.showHome()">← 返回</button>
+        <div class="world-info">
+          <h2 id="world-title"></h2>
+          <p id="world-desc"></p>
+        </div>
+        <div class="world-progress-bar">
+          <div class="progress-fill" id="world-progress-fill"></div>
+          <span class="progress-text" id="world-progress-text"></span>
+        </div>
+      </div>
+      <div class="levels-container" id="levels-container"></div>
+    </main>
+
+    <!-- 关卡详情 - 挑战界面 -->
+    <main id="view-level" class="view">
+      <div class="level-header">
+        <button class="back-btn" id="btn-back-world">← 返回关卡列表</button>
+        <div class="level-info">
+          <h2 id="level-title"></h2>
+          <div class="level-meta">
+            <span class="difficulty-badge" id="level-difficulty"></span>
+            <span class="xp-reward" id="level-xp"></span>
+          </div>
+        </div>
+      </div>
+      <div class="level-content">
+        <div class="level-left">
+          <div class="panel instruction-panel">
+            <div class="panel-header"><span>📖</span> 挑战说明</div>
+            <div class="panel-body" id="level-instruction"></div>
+          </div>
+          <div class="panel hint-panel">
+            <div class="panel-header">
+              <span>💡</span> 提示
+              <button class="hint-toggle" id="btn-hint" onclick="app.toggleHint()">显示提示</button>
+            </div>
+            <div class="panel-body hidden" id="level-hint"></div>
+          </div>
+          <div class="panel theory-panel">
+            <div class="panel-header"><span>📚</span> 知识讲解</div>
+            <div class="panel-body" id="level-theory"></div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="panel editor-panel">
+            <div class="panel-header">
+              <span>✏️</span> 代码编辑器
+              <div class="editor-actions">
+                <button class="btn-action" onclick="app.resetCode()">🔄 重置</button>
+                <button class="btn-action btn-primary" onclick="app.runCode()">▶ 运行</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="code-editor">
+                <div class="line-numbers" id="line-numbers"></div>
+                <textarea id="code-input" spellcheck="false" autocomplete="off"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="panel output-panel">
+            <div class="panel-header"><span>📋</span> 执行结果</div>
+            <div class="panel-body">
+              <div class="output-area" id="output-area">
+                <div class="output-placeholder">运行代码后，结果将显示在这里...</div>
+              </div>
+            </div>
+          </div>
+          <div class="level-actions">
+            <button class="btn-check" id="btn-check" onclick="app.checkAnswer()">✅ 提交答案</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 成就页面 -->
+    <main id="view-achievements" class="view">
+      <div class="achievements-header">
+        <button class="back-btn" onclick="app.showHome()">← 返回</button>
+        <h2>🏅 成就殿堂</h2>
+      </div>
+      <div class="achievements-grid" id="achievements-grid"></div>
+    </main>
+
+    <!-- 进度页面 -->
+    <main id="view-progress" class="view">
+      <div class="progress-header">
+        <button class="back-btn" onclick="app.showHome()">← 返回</button>
+        <h2>📊 学习进度</h2>
+      </div>
+      <div class="progress-content" id="progress-content"></div>
+    </main>
+
+    <!-- 成功弹窗 -->
+    <div class="modal hidden" id="success-modal">
+      <div class="modal-overlay" onclick="app.closeModal('success-modal')"></div>
+      <div class="modal-content success-modal">
+        <div class="success-icon">🎉</div>
+        <h3>挑战成功！</h3>
+        <div class="success-xp" id="success-xp"></div>
+        <div class="success-message" id="success-message"></div>
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="app.closeModal('success-modal')">返回</button>
+          <button class="btn-primary" id="btn-next-level">下一关 →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 错误弹窗 -->
+    <div class="modal hidden" id="error-modal">
+      <div class="modal-overlay" onclick="app.closeModal('error-modal')"></div>
+      <div class="modal-content error-modal">
+        <div class="error-icon">❌</div>
+        <h3>答案不正确</h3>
+        <div class="error-message" id="error-message"></div>
+        <div class="modal-actions">
+          <button class="btn-primary" onclick="app.closeModal('error-modal')">再试一次</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/levels-sql.js"></script>
+  <script src="js/levels-redis.js"></script>
+  <script src="js/levels-kafka.js"></script>
+  <script src="js/levels-elk.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
